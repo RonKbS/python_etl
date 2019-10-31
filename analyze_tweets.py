@@ -74,6 +74,8 @@ class TweetObject():
         # Create column with data length
         df['len'] = np.array([len(tweet) for tweet in data["clean_tweets"]])
 
+        return df
+
 
     def sentiment(self, tweet):
 
@@ -103,24 +105,24 @@ class TweetObject():
 
 if __name__ == '__main__':
 
-	t = TweetObject( host='localhost', database='tweet', user='root')
+    t = TweetObject( host='localhost', database='tweet', user='root')
 
-	data  = t.MySQLConnect("SELECT created_at, tweet FROM `tweet`.`tweets`;")
-	data = t.clean_tweets(data)
+    data  = t.MySQLConnect("SELECT created_at, tweet FROM `tweet`.`tweets`;")
+    data = t.clean_tweets(data)
 
-	data['Sentiment'] = np.array([t.sentiment(x) for x in data['clean_tweets']])
+    data['Sentiment'] = np.array([t.sentiment(x) for x in data['clean_tweets']])
 
 	# t.word_cloud(data)
-	t.save_to_csv(data)
+    t.save_to_csv(data)
 
 
-	pos_tweets = [tweet for index, tweet in enumerate(data["clean_tweets"]) if data["Sentiment"][index] > 0]
-	neg_tweets = [tweet for index, tweet in enumerate(data["clean_tweets"]) if data["Sentiment"][index] < 0]
-	neu_tweets = [tweet for index, tweet in enumerate(data["clean_tweets"]) if data["Sentiment"][index] == 0]
+    pos_tweets = [tweet for index, tweet in enumerate(data["clean_tweets"]) if data["Sentiment"][index] > 0]
+    neg_tweets = [tweet for index, tweet in enumerate(data["clean_tweets"]) if data["Sentiment"][index] < 0]
+    neu_tweets = [tweet for index, tweet in enumerate(data["clean_tweets"]) if data["Sentiment"][index] == 0]
 
 
 	#Print results
 
-	print("percentage of positive tweets: {}%".format(100*(len(pos_tweets)/len(data['clean_tweets']))))
-	print("percentage of negative tweets: {}%".format(100*(len(neg_tweets)/len(data['clean_tweets']))))
-	print("percentage of neutral tweets: {}%".format(100*(len(neu_tweets)/len(data['clean_tweets']))))
+    print("percentage of positive tweets: {}%".format(100*(len(pos_tweets)/len(data['clean_tweets']))))
+    print("percentage of negative tweets: {}%".format(100*(len(neg_tweets)/len(data['clean_tweets']))))
+    print("percentage of neutral tweets: {}%".format(100*(len(neu_tweets)/len(data['clean_tweets']))))
