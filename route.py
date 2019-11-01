@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 
 # export FLASK_APP=route.py
+# export FLASK_ENV=development
 
 app = Flask(__name__)
 
