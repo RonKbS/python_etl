@@ -1,9 +1,15 @@
+import os
+import json
+from datetime import datetime, timedelta
+
+# third-party libs
+import tweepy
 import mysql.connector
 from mysql.connector import Error
-import tweepy
-import json
 from dateutil import parser
-import os
+from flask_socketio import SocketIO, emit
+
+from analyze_tweets import *
 
 
 cons_k = os.environ.get('consumer_key')
@@ -12,6 +18,9 @@ acc_t = os.environ.get('access_token')
 acc_t_s = os.environ.get('access_token_secret')
 pd = os.environ.get('DB_PASSWORD')
 
+df1 = pd.DataFrame(columns = ['date', 'tweet'])
+df2 = pd.DataFrame(columns = ['date', 'tweet'])
+now = datetime.now()
 
 def connect(
     username, created_at, tweet, retweet_count, place, location
@@ -76,8 +85,25 @@ class Streamlistener(tweepy.StreamListener):
 				location = raw_data['user']['location']
 
 				# insert data just collected into MySQL database
-				connect(username, created_at, tweet, retweet_count, place, location)
+				# connect(username, created_at, tweet, retweet_count, place, location)
+				df1.concat(pd.DataFrame([created_at, tweet], ignore_index=True))
 				print("Tweet colleted at: {} ".format(str(created_at)))
+
+				if datetime.now() - now == timedelta(minutes=1):
+					now = datetime.now()
+					data = TweetObject().clean_tweets(df1)
+					data['Sentiment'] = np.array(
+						[TweetObject().sentiment(x) for x in data['clean_tweets']]
+					)
+					df1.iloc[0:0]
+
+					pos_tweets = [tweet for index, tweet in enumerate(data["clean_tweets"]) if data["Sentiment"][index] > 0]
+					neg_tweets = [tweet for index, tweet in enumerate(data["clean_tweets"]) if data["Sentiment"][index] < 0]
+					neu_tweets = [tweet for index, tweet in enumerate(data["clean_tweets"]) if data["Sentiment"][index] == 0]
+
+					print("percentage of positive tweets: {}%".format(100*(len(pos_tweets)/len(data['clean_tweets']))))
+					print("percentage of negative tweets: {}%".format(100*(len(neg_tweets)/len(data['clean_tweets']))))
+					print("percentage of neutral tweets: {}%".format(100*(len(neu_tweets)/len(data['clean_tweets']))))
 
 		except Error as e:
 			print(e)
