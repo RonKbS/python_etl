@@ -16,10 +16,9 @@ cons_k = os.environ.get('consumer_key')
 cons_s = os.environ.get('consumer_secret')
 acc_t = os.environ.get('access_token')
 acc_t_s = os.environ.get('access_token_secret')
-pd = os.environ.get('DB_PASSWORD')
+password = os.environ.get('DB_PASSWORD')
 
 df1 = pd.DataFrame(columns = ['date', 'tweet'])
-df2 = pd.DataFrame(columns = ['date', 'tweet'])
 now = datetime.now()
 
 def connect(
@@ -30,7 +29,7 @@ def connect(
             host='localhost',
             database='tweet',
             user='root',
-            password=pd,
+            password=password,
             charset='utf8'
 		)
 
@@ -86,9 +85,10 @@ class Streamlistener(tweepy.StreamListener):
 
 				# insert data just collected into MySQL database
 				# connect(username, created_at, tweet, retweet_count, place, location)
-				df1.concat(pd.DataFrame([created_at, tweet], ignore_index=True))
+				df1.append(pd.DataFrame([created_at, tweet]), ignore_index=True)
 				print("Tweet colleted at: {} ".format(str(created_at)))
 
+				import pdb;pdb.set_trace()
 				if datetime.now() - now == timedelta(minutes=1):
 					now = datetime.now()
 					data = TweetObject().clean_tweets(df1)
