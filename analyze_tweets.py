@@ -14,7 +14,7 @@ from mysql.connector import Error
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-import plotly.express as px
+import plotly.graph_objects as go
 
 
 
@@ -160,10 +160,23 @@ if __name__ == '__main__':
     print("percentage of neutral tweets: {}%".format(100*(len(neu_tweets)/len(data['clean_tweets']))))
     '''
 
-    fig = px.line(
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
         x=[list(x.keys())[0] for x in xy_pos],
         y=[list(x.values())[0] for x in xy_pos],
-        labels={'x':'time', 'y':'tweets'}
+        mode="lines", name="positive sentiment"
+        )
     )
-    # fig = go.Figure(data=go.Bar(y=[2, 3, 1]))
+
+    fig.update_xaxes(title_text="Time")
+    fig.update_yaxes(title_text="Sentimentality")
+
+    fig.add_trace(
+        go.Scatter(
+        x=[list(x.keys())[0] for x in xy_neg],
+        y=[list(x.values())[0] for x in xy_neg],
+        mode="lines", name="negative sentiment"
+        )
+    )
     fig.write_html('templates/first_figure.html', auto_open=True)
