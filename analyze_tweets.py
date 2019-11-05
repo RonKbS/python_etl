@@ -160,5 +160,10 @@ if __name__ == '__main__':
     print("percentage of neutral tweets: {}%".format(100*(len(neu_tweets)/len(data['clean_tweets']))))
     '''
 
+    fig = px.line(
+        x=[list(x.keys())[0] for x in xy_pos],
+        y=[list(x.values())[0] for x in xy_pos],
+        labels={'x':'time', 'y':'tweets'}
+    )
     # fig = go.Figure(data=go.Bar(y=[2, 3, 1]))
-    # fig.write_html('templates/first_figure.html', auto_open=True)
+    fig.write_html('templates/first_figure.html', auto_open=True)
