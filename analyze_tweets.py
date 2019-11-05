@@ -152,8 +152,6 @@ if __name__ == '__main__':
 
 
 
-	#Print results
-
     '''
     print("percentage of positive tweets: {}%".format(100*(len(pos_tweets)/len(data['clean_tweets']))))
     print("percentage of negative tweets: {}%".format(100*(len(neg_tweets)/len(data['clean_tweets']))))
@@ -179,4 +177,13 @@ if __name__ == '__main__':
         mode="lines", name="negative sentiment"
         )
     )
+
+    fig.add_trace(
+        go.Scatter(
+        x=[list(x.keys())[0] for x in xy_neu],
+        y=[list(x.values())[0] for x in xy_neu],
+        mode="lines", name="neutral sentiment"
+        )
+    )
+
     fig.write_html('templates/first_figure.html', auto_open=True)
