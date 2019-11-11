@@ -1,6 +1,7 @@
 import os
 import json
 from datetime import datetime, timedelta
+from collections import deque
 
 # third-party libs
 import tweepy
@@ -18,8 +19,6 @@ acc_t = os.environ.get('access_token')
 acc_t_s = os.environ.get('access_token_secret')
 password = os.environ.get('DB_PASSWORD')
 
-df1 = pd.DataFrame(columns = ['date', 'tweet'])
-now = datetime.now()
 
 def connect(
     username, created_at, tweet, retweet_count, place, location
@@ -85,25 +84,27 @@ class Streamlistener(tweepy.StreamListener):
 
 				# insert data just collected into MySQL database
 				# connect(username, created_at, tweet, retweet_count, place, location)
-				df1.append(pd.DataFrame([created_at, tweet]), ignore_index=True)
-				print("Tweet colleted at: {} ".format(str(created_at)))
+				df2 = pd.DataFrame([[created_at, tweet]], columns=['date', 'tweet'])
+				df1.append(df2, ignore_index=True)
+				# print("Tweet colleted at: {} ".format(str(created_at)))
 
-				import pdb;pdb.set_trace()
-				if datetime.now() - now == timedelta(minutes=1):
-					now = datetime.now()
-					data = TweetObject().clean_tweets(df1)
-					data['Sentiment'] = np.array(
-						[TweetObject().sentiment(x) for x in data['clean_tweets']]
-					)
+				global now
+				time_limit = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+				if int(time_limit[17:19]) - int(now[17:19]) == 10:
+
+					print('time_limit_______', time_limit)
+					print('now_______', now)
+					print(df1.size)
+					import pdb;pdb.set_trace()
+
+					now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+					# t = TweetObject( host='localhost', database='tweet', user='root')
+					# data = t.clean_tweets(df1)
+					# data['Sentiment'] = np.array(
+					# 	[TweetObject().sentiment(x) for x in data['clean_tweets']]
+					# )
 					df1.iloc[0:0]
-
-					pos_tweets = [tweet for index, tweet in enumerate(data["clean_tweets"]) if data["Sentiment"][index] > 0]
-					neg_tweets = [tweet for index, tweet in enumerate(data["clean_tweets"]) if data["Sentiment"][index] < 0]
-					neu_tweets = [tweet for index, tweet in enumerate(data["clean_tweets"]) if data["Sentiment"][index] == 0]
-
-					print("percentage of positive tweets: {}%".format(100*(len(pos_tweets)/len(data['clean_tweets']))))
-					print("percentage of negative tweets: {}%".format(100*(len(neg_tweets)/len(data['clean_tweets']))))
-					print("percentage of neutral tweets: {}%".format(100*(len(neu_tweets)/len(data['clean_tweets']))))
 
 		except Error as e:
 			print(e)
@@ -112,6 +113,9 @@ class Streamlistener(tweepy.StreamListener):
 
 
 if __name__== '__main__':
+
+	df1 = pd.DataFrame(columns = ['date', 'tweet'])
+	now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 	auth = tweepy.OAuthHandler(cons_k, cons_s)
 	auth.set_access_token(acc_t, acc_t_s)
