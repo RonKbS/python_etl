@@ -50,6 +50,35 @@ def connect(
 	return
 
 
+
+def clear_db():
+	try:
+		con = mysql.connector.connect(
+            host='localhost',
+            database='tweet',
+            user='root',
+            password=password,
+            charset='utf8'
+		)
+
+		if con.is_connected():
+			cursor = con.cursor()
+			query = "TRUNCATE TABLE tweets"
+			cursor.execute(query)
+			try:
+				con.commit()
+			except Error as e:
+				print(e)
+
+	except Error as e:
+		print(e)
+
+	cursor.close()
+	con.close()
+
+	return
+
+
 # Tweepy class to access Twitter API
 
 class Streamlistener(tweepy.StreamListener):
@@ -83,10 +112,9 @@ class Streamlistener(tweepy.StreamListener):
 				location = raw_data['user']['location']
 
 				# insert data just collected into MySQL database
-				# connect(username, created_at, tweet, retweet_count, place, location)
-				df2 = pd.DataFrame([[created_at, tweet]], columns=['date', 'tweet'])
-				df1.append(df2, ignore_index=True)
-				# print("Tweet colleted at: {} ".format(str(created_at)))
+				connect(username, created_at, tweet, retweet_count, place, location)
+
+				print("Tweet colleted at: {} ".format(str(created_at)))
 
 				global now
 				time_limit = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -99,12 +127,14 @@ class Streamlistener(tweepy.StreamListener):
 
 					now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-					# t = TweetObject( host='localhost', database='tweet', user='root')
-					# data = t.clean_tweets(df1)
-					# data['Sentiment'] = np.array(
-					# 	[TweetObject().sentiment(x) for x in data['clean_tweets']]
-					# )
-					df1.iloc[0:0]
+					t = TweetObject( host='localhost', database='tweet', user='root')
+					data  = t.MySQLConnect("SELECT created_at, tweet FROM `tweet`.`tweets`;")
+					clear_db()
+					data = t.clean_tweets(data)
+
+					data['Sentiment'] = np.array(
+						[TweetObject().sentiment(x) for x in data['clean_tweets']]
+					)
 
 		except Error as e:
 			print(e)
