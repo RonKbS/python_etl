@@ -16,7 +16,7 @@ export FLASK_ENV=development
 python dashapp.py
 '''
 
-now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+now = datetime.now()
 
 
 X = deque(maxlen=20)
@@ -43,13 +43,14 @@ app.layout = html.Div(
 def update_graph_scatter(input_data):
 
     t = TweetObject( host='localhost', database='tweet', user='root')
-    data  = t.MySQLConnect("SELECT created_at, tweet FROM `tweet`.`tweets`;")
+    global con
+    data  = t.MySQLConnect("SELECT created_at, tweet FROM `tweet`.`tweets`;", con)
     data = t.clean_tweets(data)
 
     data['Sentiment'] = np.array([t.sentiment(x) for x in data['clean_tweets']])
 
     
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now = datetime.now()
 
     # neg_tweets[0][0][17:]
     dated_data = data[['date', 'clean_tweets']].to_dict('split')['data']
@@ -57,7 +58,6 @@ def update_graph_scatter(input_data):
     neg_tweets = [tweet for index, tweet in enumerate(dated_data) if data["Sentiment"][index] < 0]
     neu_tweets = [tweet for index, tweet in enumerate(dated_data) if data["Sentiment"][index] == 0]
 
-    print('X________', X, '\n','Y________',  Y)
     X.append(now)
     Y0.append(len(pos_tweets))
     Y1.append(len(neg_tweets))
@@ -96,4 +96,12 @@ def update_graph_scatter(input_data):
 
 
 if __name__ == '__main__':
+    con = mysql.connector.connect(
+        host='localhost',
+        database='tweet',
+        user='root',
+        password=os.environ.get('DB_PASSWORD'),
+        charset='utf8'
+    )
+
     app.run_server(host='0.0.0.0', port=8080 ,debug=True)
