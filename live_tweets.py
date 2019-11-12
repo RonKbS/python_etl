@@ -20,6 +20,7 @@ acc_t_s = os.environ.get('access_token_secret')
 password = os.environ.get('DB_PASSWORD')
 
 
+
 def connect(
     username, created_at, tweet, retweet_count, place, location
 ):
@@ -109,7 +110,11 @@ class Streamlistener(tweepy.StreamListener):
 				else:
 					place = None
 
-				location = raw_data['user']['location']
+				if raw_data['user']['location'] is not None:
+					location = raw_data['user']['location']
+					print(location)
+				else:
+					location = None
 
 				# insert data just collected into MySQL database
 				connect(username, created_at, tweet, retweet_count, place, location)
@@ -118,23 +123,16 @@ class Streamlistener(tweepy.StreamListener):
 
 				global now
 				time_limit = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-				if int(time_limit[17:19]) - int(now[17:19]) == 10:
+				if int(time_limit[17:19]) - int(now[17:19]) == 15:
 
 					print('time_limit_______', time_limit)
 					print('now_______', now)
-					print(df1.size)
-					import pdb;pdb.set_trace()
 
 					now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 					t = TweetObject( host='localhost', database='tweet', user='root')
 					data  = t.MySQLConnect("SELECT created_at, tweet FROM `tweet`.`tweets`;")
 					clear_db()
-					data = t.clean_tweets(data)
-
-					data['Sentiment'] = np.array(
-						[TweetObject().sentiment(x) for x in data['clean_tweets']]
-					)
 
 		except Error as e:
 			print(e)
@@ -144,7 +142,6 @@ class Streamlistener(tweepy.StreamListener):
 
 if __name__== '__main__':
 
-	df1 = pd.DataFrame(columns = ['date', 'tweet'])
 	now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 	auth = tweepy.OAuthHandler(cons_k, cons_s)

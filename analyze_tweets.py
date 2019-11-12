@@ -76,7 +76,7 @@ class TweetObject():
             df['clean_tweets'][i] = ' '.join(words)
 
         # Create column with data length
-        df['len'] = np.array([len(tweet) for tweet in data["clean_tweets"]])
+        df['len'] = np.array([len(tweet) for tweet in df["clean_tweets"]])
 
         return df
 
