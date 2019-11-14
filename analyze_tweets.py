@@ -26,24 +26,18 @@ class TweetObject():
         self.database = database
         self.user = user
 
-    def MySQLConnect(self, query, passed_con):
+    def MySQLConnect(self, query):
 
         try:
-            if not passed_con:
-                con = mysql.connector.connect(
-                    host=self.host,
-                    database=self.database,
-                    user=self.user,
-                    password=self.password,
-                    charset='utf8'
-                )
-            elif passed_con:
-                print("Already successfully connected to database")
-                con = passed_con
-
+            con = mysql.connector.connect(
+                host=self.host,
+                database=self.database,
+                user=self.user,
+                password=self.password,
+                charset='utf8'
+            )
             if con.is_connected():
-                if not passed_con:
-                    print("Successfully connected to database")
+                print("Successfully connected to database")
 
                 cursor = con.cursor()
                 query = query
